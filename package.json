@@ -1,0 +1,19 @@
+{
+  "name": "typecomp",
+  "version": "1.0.0",
+  "description": "A multi project TypeScript language service abstraction",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "repository": "https://github.com/kasperisager/typecomp",
+  "author": "Kasper Isager <kasperisager@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "prepare": "tsc"
+  },
+  "dependencies": {
+    "@types/node": "^9.4.6",
+    "tsconfig": "^7.0.0",
+    "typescript": "^2.7.2"
+  }
+}
