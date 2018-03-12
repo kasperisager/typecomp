@@ -6,7 +6,7 @@
     "declaration": true,
     "strict": true
   },
-  "includes": [
+  "include": [
     "src/**/*.ts"
   ]
 }
