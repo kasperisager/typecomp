@@ -133,6 +133,10 @@ class InMemoryLanguageServiceHost implements LanguageServiceHost {
     return TS.sys.fileExists(fileName);
   }
 
+  public realpath(fileName: string): string {
+    return TS.sys.realpath ? TS.sys.realpath(fileName) : fileName;
+  }
+
   public readDirectory(
     directoryName: string,
     extensions?: ReadonlyArray<string>,
@@ -147,6 +151,16 @@ class InMemoryLanguageServiceHost implements LanguageServiceHost {
       include,
       depth
     );
+  }
+
+  public getDirectories(directoryName: string): Array<string> {
+    if (!this.fileExists(directoryName)) {
+      return [];
+    }
+
+    return TS.sys
+      .getDirectories(directoryName)
+      .map(directoryName => path.basename(directoryName));
   }
 
   public addFile(fileName: string): ScriptInfo {
