@@ -19,7 +19,7 @@ export class Project {
   }
 
   private resolve(filename: string): string {
-    return path.resolve(this.host.getCurrentDirectory(), filename);
+    return path.resolve(process.cwd(), filename);
   }
 
   public diagnose(filename: string): Array<Diagnostic> {
