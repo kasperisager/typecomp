@@ -1,6 +1,6 @@
 {
   "name": "typecomp",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A multi project TypeScript language service abstraction",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
