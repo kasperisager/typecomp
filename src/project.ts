@@ -58,6 +58,7 @@ interface LanguageService extends TS.LanguageService {}
 interface ScriptInfo {
   readonly version: string;
   readonly snapshot: TS.IScriptSnapshot;
+  readonly kind: TS.ScriptKind;
 }
 
 class InMemoryLanguageServiceHost implements LanguageServiceHost {
@@ -112,18 +113,8 @@ class InMemoryLanguageServiceHost implements LanguageServiceHost {
   }
 
   public getScriptKind(fileName: string): TS.ScriptKind {
-    switch (path.extname(fileName)) {
-      case ".js":
-        return TS.ScriptKind.JS;
-      case ".jsx":
-        return TS.ScriptKind.JSX;
-      case ".ts":
-        return TS.ScriptKind.TS;
-      case ".tsx":
-        return TS.ScriptKind.TSX;
-      default:
-        return TS.ScriptKind.Unknown;
-    }
+    const { kind } = this.files.get(fileName) || this.addFile(fileName);
+    return kind;
   }
 
   public getCompilationSettings(): TS.CompilerOptions {
@@ -166,7 +157,20 @@ class InMemoryLanguageServiceHost implements LanguageServiceHost {
       .update(text)
       .digest("hex");
 
-    const file = { snapshot, version };
+    let kind = TS.ScriptKind.Unknown;
+
+    switch (path.extname(fileName)) {
+      case ".js":
+        kind = TS.ScriptKind.JS;
+      case ".jsx":
+        kind = TS.ScriptKind.JSX;
+      case ".ts":
+        kind = TS.ScriptKind.TS;
+      case ".tsx":
+        kind = TS.ScriptKind.TSX;
+    }
+
+    const file = { snapshot, version, kind };
 
     this.files.set(fileName, file);
 
