@@ -57,14 +57,14 @@ class InMemoryLanguageServiceHost implements LanguageServiceHost {
   private readonly options: TS.CompilerOptions;
   private readonly root: string;
 
-  public constructor(root: string) {
-    this.root = root;
-
-    const configPath = tsconfig.findSync(root);
+  public constructor(cwd: string) {
+    const configPath = tsconfig.findSync(cwd);
 
     if (typeof configPath !== "string") {
-      throw new Error(`${root} contains no TypeScript configuration`);
+      throw new Error(`${cwd} contains no TypeScript configuration`);
     }
+
+    const root = path.dirname(configPath);
 
     const { config } = TS.parseConfigFileTextToJson(
       configPath,
@@ -74,6 +74,7 @@ class InMemoryLanguageServiceHost implements LanguageServiceHost {
     const { options } = TS.parseJsonConfigFileContent(config, TS.sys, root);
 
     this.options = options;
+    this.root = root;
   }
 
   public useCaseSensitiveFileNames(): boolean {
