@@ -76,7 +76,7 @@ class InMemoryLanguageServiceHost implements LanguageServiceHost {
 
     const { config } = TS.parseConfigFileTextToJson(
       configPath,
-      fs.readFileSync(configPath).toString()
+      fs.readFileSync(configPath, "utf8")
     );
 
     const { options } = TS.parseJsonConfigFileContent(config, TS.sys, root);
@@ -159,7 +159,7 @@ class InMemoryLanguageServiceHost implements LanguageServiceHost {
   }
 
   public addFile(fileName: string): ScriptInfo {
-    const text = this.readFile(fileName, "utf8") || "";
+    const text = fs.readFileSync(fileName, "utf8");
     const snapshot = TS.ScriptSnapshot.fromString(text);
     const version = crypto
       .createHash("md5")
