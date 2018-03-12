@@ -18,7 +18,13 @@ export class Project {
     this.service = TS.createLanguageService(this.host, registry);
   }
 
+  private resolve(filename: string): string {
+    return path.resolve(this.host.getCurrentDirectory(), filename);
+  }
+
   public diagnose(filename: string): Array<Diagnostic> {
+    filename = this.resolve(filename);
+
     const { service, host } = this;
 
     host.addFile(filename);
@@ -30,6 +36,8 @@ export class Project {
   }
 
   public compile(filename: string): Array<Output> {
+    filename = this.resolve(filename);
+
     const { service, host } = this;
 
     host.addFile(filename);
