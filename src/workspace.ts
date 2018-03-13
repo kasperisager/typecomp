@@ -10,7 +10,7 @@ export class Workspace {
   private readonly registry: Registry;
 
   public constructor() {
-    this.registry = TS.createDocumentRegistry();
+    this.registry = TS.createDocumentRegistry(false, process.cwd());
   }
 
   private projectFor(filename: string): Project {
