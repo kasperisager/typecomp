@@ -48,6 +48,13 @@ export class Project {
   }
 }
 
+function md5(input: string): string {
+  return crypto
+    .createHash("md5")
+    .update(input)
+    .digest("hex");
+}
+
 interface LanguageServiceHost extends TS.LanguageServiceHost {
   addFile(path: string): void;
   removeFile(path: string): void;
@@ -64,42 +71,53 @@ interface ScriptInfo {
 class InMemoryLanguageServiceHost implements LanguageServiceHost {
   private readonly files: Map<string, ScriptInfo> = new Map();
   private readonly options: TS.CompilerOptions;
-  private readonly root: string;
 
-  public constructor(cwd: string) {
-    const configPath = tsconfig.findSync(cwd);
+  private version: string = "";
+
+  public constructor(root: string) {
+    this.options = this.getOptions(root);
+  }
+
+  private getOptions(root: string): TS.CompilerOptions {
+    const configPath = tsconfig.findSync(root);
 
     if (typeof configPath !== "string") {
-      throw new Error(`${cwd} contains no TypeScript configuration`);
+      return {};
     }
-
-    const root = path.dirname(configPath);
 
     const { config } = TS.parseConfigFileTextToJson(
       configPath,
       fs.readFileSync(configPath, "utf8")
     );
 
-    const { options } = TS.parseJsonConfigFileContent(config, TS.sys, root);
+    const { options } = TS.parseJsonConfigFileContent(
+      config,
+      TS.sys,
+      path.dirname(configPath)
+    );
 
-    this.options = options;
-    this.root = root;
+    return options;
   }
 
-  public useCaseSensitiveFileNames(): boolean {
-    return TS.sys.useCaseSensitiveFileNames;
+  public getCompilationSettings(): TS.CompilerOptions {
+    return this.options;
   }
 
   public getNewLine(): string {
-    return TS.sys.newLine;
+    return "\n";
   }
 
-  public getDefaultLibFileName(options: TS.CompilerOptions): string {
-    return TS.getDefaultLibFilePath(options);
+  public getProjectVersion(): string {
+    return this.version;
   }
 
   public getScriptFileNames(): Array<string> {
     return [...this.files.keys()];
+  }
+
+  public getScriptKind(fileName: string): TS.ScriptKind {
+    const { kind } = this.files.get(fileName) || this.addFile(fileName);
+    return kind;
   }
 
   public getScriptVersion(fileName: string): string {
@@ -112,64 +130,51 @@ class InMemoryLanguageServiceHost implements LanguageServiceHost {
     return snapshot;
   }
 
-  public getScriptKind(fileName: string): TS.ScriptKind {
-    const { kind } = this.files.get(fileName) || this.addFile(fileName);
-    return kind;
-  }
-
-  public getCompilationSettings(): TS.CompilerOptions {
-    return this.options;
-  }
-
   public getCurrentDirectory(): string {
-    return this.root;
+    return process.cwd();
   }
 
-  public readFile(fileName: string, encoding?: string): string | undefined {
-    return TS.sys.readFile(fileName, encoding);
+  public getDefaultLibFileName(options: TS.CompilerOptions): string {
+    return TS.getDefaultLibFilePath(options);
   }
 
-  public fileExists(fileName: string): boolean {
-    return TS.sys.fileExists(fileName);
+  public useCaseSensitiveFileNames(): boolean {
+    return true;
+  }
+
+  public readFile(
+    fileName: string,
+    encoding: string = "utf8"
+  ): string | undefined {
+    return fs.readFileSync(fileName, encoding);
   }
 
   public realpath(fileName: string): string {
-    return TS.sys.realpath ? TS.sys.realpath(fileName) : fileName;
+    return fs.realpathSync(fileName);
   }
 
-  public readDirectory(
-    directoryName: string,
-    extensions?: ReadonlyArray<string>,
-    exclude?: ReadonlyArray<string>,
-    include?: ReadonlyArray<string>,
-    depth?: number
-  ): Array<string> {
-    return TS.sys.readDirectory(
-      directoryName,
-      extensions,
-      exclude,
-      include,
-      depth
-    );
+  public fileExists(fileName: string): boolean {
+    return fs.existsSync(fileName);
   }
 
   public getDirectories(directoryName: string): Array<string> {
-    if (!this.fileExists(directoryName)) {
+    if (!fs.existsSync(directoryName)) {
       return [];
     }
 
-    return TS.sys
-      .getDirectories(directoryName)
-      .map(directoryName => path.basename(directoryName));
+    return fs
+      .readdirSync(directoryName)
+      .filter(entry =>
+        fs.statSync(path.join(directoryName, entry)).isDirectory()
+      );
   }
 
   public addFile(fileName: string): ScriptInfo {
     const text = fs.readFileSync(fileName, "utf8");
     const snapshot = TS.ScriptSnapshot.fromString(text);
-    const version = crypto
-      .createHash("md5")
-      .update(text)
-      .digest("hex");
+    const version = md5(text);
+
+    this.version = md5(this.version + version);
 
     let kind = TS.ScriptKind.Unknown;
 
