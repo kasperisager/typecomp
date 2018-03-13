@@ -139,7 +139,7 @@ class InMemoryLanguageServiceHost implements LanguageServiceHost {
   }
 
   public useCaseSensitiveFileNames(): boolean {
-    return true;
+    return false;
   }
 
   public readFile(
