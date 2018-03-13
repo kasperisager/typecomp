@@ -71,11 +71,13 @@ interface ScriptInfo {
 class InMemoryLanguageServiceHost implements LanguageServiceHost {
   private readonly files: Map<string, ScriptInfo> = new Map();
   private readonly options: TS.CompilerOptions;
+  private readonly root: string;
 
   private version: string = "";
 
   public constructor(root: string) {
     this.options = this.getOptions(root);
+    this.root = root;
   }
 
   private getOptions(root: string): TS.CompilerOptions {
@@ -131,7 +133,7 @@ class InMemoryLanguageServiceHost implements LanguageServiceHost {
   }
 
   public getCurrentDirectory(): string {
-    return process.cwd();
+    return this.root;
   }
 
   public getDefaultLibFileName(options: TS.CompilerOptions): string {
