@@ -30,6 +30,10 @@ export class Workspace {
     return project;
   }
 
+  public index(filename: string): void {
+    this.projectFor(filename).index(filename);
+  }
+
   public diagnose(filename: string): Array<Diagnostic> {
     return this.projectFor(filename).diagnose(filename);
   }

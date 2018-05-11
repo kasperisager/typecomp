@@ -22,12 +22,16 @@ export class Project {
     return path.resolve(process.cwd(), filename);
   }
 
+  public index(filename: string): void {
+    this.host.addFile(filename);
+  }
+
   public diagnose(filename: string): Array<Diagnostic> {
     filename = this.resolve(filename);
 
-    const { service, host } = this;
+    const { service } = this;
 
-    host.addFile(filename);
+    this.index(filename);
 
     const syntactic = service.getSyntacticDiagnostics(filename);
     const semantic = service.getSemanticDiagnostics(filename);
@@ -38,9 +42,9 @@ export class Project {
   public compile(filename: string): Array<Output> {
     filename = this.resolve(filename);
 
-    const { service, host } = this;
+    const { service } = this;
 
-    host.addFile(filename);
+    this.index(filename);
 
     const { outputFiles } = service.getEmitOutput(filename);
 
