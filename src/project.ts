@@ -175,8 +175,15 @@ class InMemoryLanguageServiceHost implements LanguageServiceHost {
 
   public addFile(fileName: string): ScriptInfo {
     const text = fs.readFileSync(fileName, "utf8");
-    const snapshot = TS.ScriptSnapshot.fromString(text);
     const version = md5(text);
+
+    const current = this.files.get(fileName);
+
+    if (current !== undefined && current.version === version) {
+      return current;
+    }
+
+    const snapshot = TS.ScriptSnapshot.fromString(text);
 
     this.version = md5(this.version + version);
 
@@ -193,7 +200,7 @@ class InMemoryLanguageServiceHost implements LanguageServiceHost {
         kind = TS.ScriptKind.TSX;
     }
 
-    const file = { snapshot, version, kind };
+    const file: ScriptInfo = { snapshot, version, kind };
 
     this.files.set(fileName, file);
 
