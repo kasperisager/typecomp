@@ -192,10 +192,13 @@ class InMemoryLanguageServiceHost implements LanguageServiceHost {
     switch (path.extname(fileName)) {
       case ".js":
         kind = TS.ScriptKind.JS;
+        break;
       case ".jsx":
         kind = TS.ScriptKind.JSX;
+        break;
       case ".ts":
         kind = TS.ScriptKind.TS;
+        break;
       case ".tsx":
         kind = TS.ScriptKind.TSX;
     }
